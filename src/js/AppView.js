@@ -1,4 +1,23 @@
 /**
+ * Creates a filter function based on the AppView model state
+ * @param  {AppView} _app - reference to the current app instance
+ * @return {Function} - filter function to be used by PiecesView
+ */
+function getPieceFilter (_app) {
+  var highest     = _app.board.getHighestValue()
+    , numberLimit = !~~highest ? 2 : highest
+
+  return function (possibleList) {
+    return possibleList.filter(function (possible) {
+      return possible.length === 1 ?
+               possible[0] <= numberLimit :
+               possible[0] <= numberLimit &&
+               possible[1] <= numberLimit
+    })
+  }
+}
+
+/**
  * Contains all other views
  */
 var AppView = function (options) {
@@ -48,28 +67,17 @@ AppView.prototype.handleReleaseEvent = function (e) {
 }
 
 /**
+ * Deletes last game, if it exists, gets first piece in new game
  * 
- */
-
-/**
- * 
- * @return {[type]} [description]
+ * @return {AppView} - self reference
  */
 AppView.prototype.startGame = function() {
   /*
   clear game model
   set a new piece
    */
-  
-  var highest     = this.board.getHighestValue()
-    , numberLimit = !~~highest ? 2 : highest
 
-  this.__model.currentPiece = new PieceView(function (possibleList) {
-    return possibleList.filter(function (possible) {
-      return possible.length === 1 ?
-               possible[0] <= numberLimit :
-               possible[0] <= numberLimit &&
-               possible[1] <= numberLimit
-    })
-  })
+  this.__model.currentPiece = new PieceView(getPieceFilter(this))
+
+  return this
 }
