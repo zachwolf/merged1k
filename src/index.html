@@ -11,6 +11,10 @@
 		height: 100%;
 		width: 100%;
 	}
+
+	#stage {
+		border: 1px solid red;
+	}
 	</style>
 
 </head>
@@ -26,9 +30,10 @@
 			root.c = context
 			root.d = window.document
 
-			canvas.height = document.body.clientHeight
-			canvas.width = document.body.clientWidth
+			canvas.height = 480
+			canvas.width = 320
 		}(window))
 	</script>
+	<script src="/js/app.js"></script>
 </body>
 </html>
