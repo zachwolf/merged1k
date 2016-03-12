@@ -98,7 +98,12 @@ AppView.prototype.draw = (function () {
    */
   var _draw = function () {
         _app.__model.currentPiece.__model.value.forEach(function (val, key) {
-          
+          _app.context.fillStyle = CONFIG.PIECE.COLOR[val]
+          _app.context.fillRect((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key, 0, CONFIG.PIECE.SIZE, CONFIG.PIECE.SIZE)
+
+          _app.context.font = "bold 24px sans-serif"
+          _app.context.fillStyle = "#fff"
+          _app.context.fillText(val, ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key) + 25, 25)
         })
 
         if (_app.__model.isDragging) {
