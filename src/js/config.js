@@ -2,7 +2,9 @@ var _stageWidth = 320
 	, _stageHeight = 480
 	, _pieceSize = 50
 	, _margin = 6
-	, _pieceX = (_stageWidth / 2) - _pieceSize - (_margin / 2)
+// , offset = piece.length === 1 ? (CONFIG.PIECE.SIZE / 2) + (CONFIG.PIECE.MARGIN / 2) : 0
+	, _pieceX2 = (_stageWidth / 2) - _pieceSize - (_margin / 2)
+	, _pieceX1 = _pieceX2 + (_pieceSize / 2) + (_margin / 2)
 	, _pieceY = 400
 
 var CONFIG = {
@@ -18,10 +20,16 @@ var CONFIG = {
 			6: '#F1ED6E',
 			7: '#100FA5'
 		},
-		X: _pieceX,
+		X: {
+			1: _pieceX1, 
+			2: _pieceX2
+		},
 		Y: _pieceY,
 		TEXT: {
-			X: _pieceX + _pieceSize / 2,
+			X: {
+				1: _pieceX1 + _pieceSize / 2,
+				2: _pieceX2 + _pieceSize / 2
+			},
 			Y: _pieceY + (_pieceSize / 2) + 8,
 			FONT: "bold 24px sans-serif",
 			COLOR: "rgba(255, 255, 255, .8)",

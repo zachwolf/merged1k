@@ -32,8 +32,9 @@ var AppView = function (options) {
   // game model
   this.__model = {
     currentPiece: null,
-    isDragging: false
-    // ...
+    isDragging: false,
+    mouseX: 0,
+    mouseY: 0
   }
 
   // binding events
@@ -48,6 +49,8 @@ AppView.prototype.bindEvents = function () {
   this.canvas.addEventListener('mousedown', this.handleDragEvent.bind(this))
 
   this.body.addEventListener('mouseup', this.handleReleaseEvent.bind(this))
+
+  this.body.addEventListener('mousemove', this.handleMoveEvent.bind(this))
 }
 
 /**
@@ -56,9 +59,22 @@ AppView.prototype.bindEvents = function () {
 AppView.prototype.handleDragEvent = function (e) {
   e.preventDefault()
 
-  this.__model.isDragging = true
+  var pieceCount = this.__model.currentPiece.__model.value.length
+    , ex  = e.offsetX
+    , ey  = e.offsetY
+    , px0 = CONFIG.PIECE.X[pieceCount]
+    , py0 = CONFIG.PIECE.Y
+    , px1 = px0 + (pieceCount === 1 ? CONFIG.PIECE.SIZE : CONFIG.PIECE.SIZE * 2 + CONFIG.PIECE.MARGIN)
+    , py1 = py0 + CONFIG.PIECE.SIZE
+    , isOverPiece = px0 < ex && py0 < ey && ex < px1 && ey < py1
 
-  this.draw()
+  if (isOverPiece) {
+    this.__model.isDragging = true
+
+    this.draw()
+  }
+
+  return this
 }
 
 /**
@@ -68,6 +84,23 @@ AppView.prototype.handleReleaseEvent = function (e) {
   e.preventDefault()
   
   this.__model.isDragging = false
+
+  this.__model.mouseX = 0
+  this.__model.mouseY = 0
+
+  this.draw()
+
+  return this
+}
+
+/**
+ * 
+ */
+AppView.prototype.handleMoveEvent = function (e) {
+  this.__model.mouseX = e.offsetX
+  this.__model.mouseY = e.offsetY
+
+  return this
 }
 
 /**
@@ -97,14 +130,18 @@ AppView.prototype.draw = (function () {
    * @return {[type]} [description]
    */
   var _draw = function () {
-        var piece  = _app.__model.currentPiece.__model.value
-          , offset = piece.length === 1 ? (CONFIG.PIECE.SIZE / 2) + (CONFIG.PIECE.MARGIN / 2) : 0
+        var piece = _app.__model.currentPiece.__model.value
 
+        // clear stage
+        _app.context.fillStyle = '#fff'
+        _app.context.fillRect(0, 0, CONFIG.STAGE.WIDTH, CONFIG.STAGE.HEIGHT)
+
+        // draw piece
         piece.forEach(function (val, key) {
-          var pieceX = (((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key) + CONFIG.PIECE.X) + offset
-            , pieceY = CONFIG.PIECE.Y
-            , textX  = (((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key) + CONFIG.PIECE.TEXT.X) + offset
-            , textY  = CONFIG.PIECE.TEXT.Y
+          var pieceX = _app.__model.mouseX + ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key) + CONFIG.PIECE.X[piece.length]
+            , pieceY = _app.__model.mouseY + CONFIG.PIECE.Y
+            , textX  = _app.__model.mouseX + ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key) + CONFIG.PIECE.TEXT.X[piece.length]
+            , textY  = _app.__model.mouseY + CONFIG.PIECE.TEXT.Y
 
           // piece style
           _app.context.fillStyle = CONFIG.PIECE.COLOR[val]
