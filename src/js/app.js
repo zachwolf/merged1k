@@ -31,6 +31,8 @@ var PieceView = function (filter) {
 	}
 
 	this.setValue()
+
+	this.length = this.__model.value.length
 }
 
 /**
