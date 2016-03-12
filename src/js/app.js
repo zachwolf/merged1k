@@ -27,10 +27,19 @@ var PieceView = function (filter) {
 			                        [4, 3], [5, 3], [6, 3],
 			                                [5, 4], [6, 4],
 			                                        [6, 5]
-		])
+		]),
+
+		x: NaN,
+		y: NaN,
+		offset: {
+			x: NaN,
+			y: NaN
+		}
 	}
 
 	this.setValue()
+
+	this.resetPosition()
 
 	this.length = this.__model.value.length
 }
@@ -44,6 +53,26 @@ PieceView.prototype.setValue = function (__seed) {
 	}(this.__model.possibilities))		
 
 	return this
+}
+
+/**
+ * [resetPosition description]
+ * @return {[type]} [description]
+ */
+PieceView.prototype.resetPosition = function () {
+	this.__model.x = CONFIG.PIECE.X[this.__model.value.length]
+  this.__model.y = CONFIG.PIECE.Y
+  this.__model.offset.x = 0
+  this.__model.offset.y = 0
+	
+	return this
+}
+
+/**
+ * 
+ */
+PieceView.prototype.get = function (prop) {
+	return this.__model[prop] - this.__model.offset[prop]
 }
 
 // make it happ'n, cap'n

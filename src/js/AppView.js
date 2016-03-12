@@ -32,12 +32,7 @@ var AppView = function (options) {
   // game model
   this.__model = {
     currentPiece: null,
-    pieceX: NaN,
-    pieceY: NaN,
-    pieceOffsetX: NaN,
-    pieceOffsetY: NaN,
-
-    isDragging: false,
+    isDragging: false
   }
 
   // binding events
@@ -74,8 +69,10 @@ AppView.prototype.handleClickEvent = function (e) {
   if (isOverPiece) {
     this.__model.isDragging = true
 
-    this.__model.pieceOffsetX = ex - px0
-    this.__model.pieceOffsetY = ey - py0
+    this.__model.currentPiece.__model.x = e.offsetX
+    this.__model.currentPiece.__model.y = e.offsetY
+    this.__model.currentPiece.__model.offset.x = ex - px0
+    this.__model.currentPiece.__model.offset.y = ey - py0
 
     this.draw()
   }
@@ -91,8 +88,7 @@ AppView.prototype.handleReleaseEvent = function (e) {
   
   this.__model.isDragging = false
 
-  this.__model.pieceX = CONFIG.PIECE.X[this.__model.currentPiece.length]
-  this.__model.pieceY = CONFIG.PIECE.Y
+  this.__model.currentPiece.resetPosition()
 
   this.draw()
 
@@ -105,8 +101,8 @@ AppView.prototype.handleReleaseEvent = function (e) {
 AppView.prototype.handleMoveEvent = function (e) {
 
   if (this.__model.isDragging) {
-    this.__model.pieceX = e.offsetX - this.__model.pieceOffsetX
-    this.__model.pieceY = e.offsetY - this.__model.pieceOffsetY
+    this.__model.currentPiece.__model.x = e.offsetX
+    this.__model.currentPiece.__model.y = e.offsetY
   }
 
   return this
@@ -119,12 +115,7 @@ AppView.prototype.handleMoveEvent = function (e) {
  */
 AppView.prototype.startGame = function() {
 
-  var piece = new PieceView(getPieceFilter(this))
-
-  this.__model.pieceX = CONFIG.PIECE.X[piece.length]
-  this.__model.pieceY = CONFIG.PIECE.Y
-
-  this.__model.currentPiece = piece
+  this.__model.currentPiece = new PieceView(getPieceFilter(this))
 
   this.draw()
 
@@ -152,8 +143,8 @@ AppView.prototype.draw = (function () {
 
         // draw piece
         piece.forEach(function (val, key) {
-          var pieceX = _app.__model.pieceX + ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key)
-            , pieceY = _app.__model.pieceY
+          var pieceX = _app.__model.currentPiece.get('x') + ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key)
+            , pieceY = _app.__model.currentPiece.get('y')
             , textX  = pieceX + CONFIG.PIECE.TEXT.OFFSET.X
             , textY  = pieceY + CONFIG.PIECE.TEXT.OFFSET.Y
 
