@@ -98,12 +98,18 @@ AppView.prototype.draw = (function () {
    */
   var _draw = function () {
         _app.__model.currentPiece.__model.value.forEach(function (val, key) {
-          _app.context.fillStyle = CONFIG.PIECE.COLOR[val]
-          _app.context.fillRect((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key, 0, CONFIG.PIECE.SIZE, CONFIG.PIECE.SIZE)
+          var pieceX = ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key) + CONFIG.PIECE.X
+            , pieceY = CONFIG.PIECE.Y
+            , textX  = ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key) + CONFIG.PIECE.TEXT.X
+            , textY  = CONFIG.PIECE.TEXT.Y
 
-          _app.context.font = "bold 24px sans-serif"
-          _app.context.fillStyle = "#fff"
-          _app.context.fillText(val, ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key) + 25, 25)
+          _app.context.fillStyle = CONFIG.PIECE.COLOR[val]
+          _app.context.fillRect(pieceX, pieceY, CONFIG.PIECE.SIZE, CONFIG.PIECE.SIZE)
+
+          _app.context.font = CONFIG.PIECE.TEXT.FONT
+          _app.context.fillStyle = CONFIG.PIECE.TEXT.COLOR
+          _app.context.textAlign = CONFIG.PIECE.TEXT.ALIGN
+          _app.context.fillText(val, textX, textY)
         })
 
         if (_app.__model.isDragging) {
@@ -119,10 +125,3 @@ AppView.prototype.draw = (function () {
     return this
   }
 }())
-
-// function () {
-
-//   _draw(this)
-
-//   return this
-// }
