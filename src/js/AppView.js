@@ -49,7 +49,7 @@ var AppView = function (options) {
  * @return {[type]} [description]
  */
 AppView.prototype.bindEvents = function () {
-  this.canvas.addEventListener('mousedown', this.handleDragEvent.bind(this))
+  this.canvas.addEventListener('mousedown', this.handleClickEvent.bind(this))
 
   this.body.addEventListener('mouseup', this.handleReleaseEvent.bind(this))
 
@@ -59,7 +59,7 @@ AppView.prototype.bindEvents = function () {
 /**
  * 
  */
-AppView.prototype.handleDragEvent = function (e) {
+AppView.prototype.handleClickEvent = function (e) {
   e.preventDefault()
 
   var pieceCount = this.__model.currentPiece.__model.value.length
