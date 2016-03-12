@@ -1,11 +1,14 @@
-var _pieceSize = 50
-	, _pieceX = 100
-	, _pieceY = 200
+var _stageWidth = 320
+	, _stageHeight = 480
+	, _pieceSize = 50
+	, _margin = 6
+	, _pieceX = (_stageWidth / 2) - _pieceSize - (_margin / 2)
+	, _pieceY = 400
 
 var CONFIG = {
 	PIECE: {
 		SIZE: _pieceSize,
-		MARGIN: 5,
+		MARGIN: _margin,
 		COLOR: {
 			1: '#B1ADE5',
 			2: '#B1EED5',
@@ -30,7 +33,11 @@ var CONFIG = {
 		Y: 100
 	},
 	STAGE: {
-		WIDTH: 320,
-		HEIGHT: 480
+		WIDTH: _stageWidth,
+		HEIGHT: _stageHeight/*,
+		CENTER: {
+			X: _stageWidth / 2,
+			Y: _stageHeight / 2
+		}*/
 	}
 }

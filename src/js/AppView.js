@@ -97,18 +97,27 @@ AppView.prototype.draw = (function () {
    * @return {[type]} [description]
    */
   var _draw = function () {
-        _app.__model.currentPiece.__model.value.forEach(function (val, key) {
-          var pieceX = ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key) + CONFIG.PIECE.X
+        var piece  = _app.__model.currentPiece.__model.value
+          , offset = piece.length === 1 ? (CONFIG.PIECE.SIZE / 2) + (CONFIG.PIECE.MARGIN / 2) : 0
+
+        piece.forEach(function (val, key) {
+          var pieceX = (((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key) + CONFIG.PIECE.X) + offset
             , pieceY = CONFIG.PIECE.Y
-            , textX  = ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key) + CONFIG.PIECE.TEXT.X
+            , textX  = (((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key) + CONFIG.PIECE.TEXT.X) + offset
             , textY  = CONFIG.PIECE.TEXT.Y
 
+          // piece style
           _app.context.fillStyle = CONFIG.PIECE.COLOR[val]
+
+          // add piece
           _app.context.fillRect(pieceX, pieceY, CONFIG.PIECE.SIZE, CONFIG.PIECE.SIZE)
 
-          _app.context.font = CONFIG.PIECE.TEXT.FONT
+          // text style
+          _app.context.font      = CONFIG.PIECE.TEXT.FONT
           _app.context.fillStyle = CONFIG.PIECE.TEXT.COLOR
           _app.context.textAlign = CONFIG.PIECE.TEXT.ALIGN
+
+          // add text
           _app.context.fillText(val, textX, textY)
         })
 
