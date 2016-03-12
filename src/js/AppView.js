@@ -32,9 +32,12 @@ var AppView = function (options) {
   // game model
   this.__model = {
     currentPiece: null,
+    pieceX: NaN,
+    pieceY: NaN,
+    pieceOffsetX: NaN,
+    pieceOffsetY: NaN,
+
     isDragging: false,
-    mouseX: 0,
-    mouseY: 0
   }
 
   // binding events
@@ -71,6 +74,9 @@ AppView.prototype.handleDragEvent = function (e) {
   if (isOverPiece) {
     this.__model.isDragging = true
 
+    this.__model.pieceOffsetX = ex - px0
+    this.__model.pieceOffsetY = ey - py0
+
     this.draw()
   }
 
@@ -85,8 +91,8 @@ AppView.prototype.handleReleaseEvent = function (e) {
   
   this.__model.isDragging = false
 
-  this.__model.mouseX = 0
-  this.__model.mouseY = 0
+  this.__model.pieceX = CONFIG.PIECE.X[this.__model.currentPiece.length]
+  this.__model.pieceY = CONFIG.PIECE.Y
 
   this.draw()
 
@@ -97,8 +103,11 @@ AppView.prototype.handleReleaseEvent = function (e) {
  * 
  */
 AppView.prototype.handleMoveEvent = function (e) {
-  this.__model.mouseX = e.offsetX
-  this.__model.mouseY = e.offsetY
+
+  if (this.__model.isDragging) {
+    this.__model.pieceX = e.offsetX - this.__model.pieceOffsetX
+    this.__model.pieceY = e.offsetY - this.__model.pieceOffsetY
+  }
 
   return this
 }
@@ -110,7 +119,12 @@ AppView.prototype.handleMoveEvent = function (e) {
  */
 AppView.prototype.startGame = function() {
 
-  this.__model.currentPiece = new PieceView(getPieceFilter(this))
+  var piece = new PieceView(getPieceFilter(this))
+
+  this.__model.pieceX = CONFIG.PIECE.X[piece.length]
+  this.__model.pieceY = CONFIG.PIECE.Y
+
+  this.__model.currentPiece = piece
 
   this.draw()
 
@@ -133,15 +147,15 @@ AppView.prototype.draw = (function () {
         var piece = _app.__model.currentPiece.__model.value
 
         // clear stage
-        _app.context.fillStyle = '#fff'
+        _app.context.fillStyle = CONFIG.STAGE.BACKGROUND
         _app.context.fillRect(0, 0, CONFIG.STAGE.WIDTH, CONFIG.STAGE.HEIGHT)
 
         // draw piece
         piece.forEach(function (val, key) {
-          var pieceX = _app.__model.mouseX + ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key) + CONFIG.PIECE.X[piece.length]
-            , pieceY = _app.__model.mouseY + CONFIG.PIECE.Y
-            , textX  = _app.__model.mouseX + ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key) + CONFIG.PIECE.TEXT.X[piece.length]
-            , textY  = _app.__model.mouseY + CONFIG.PIECE.TEXT.Y
+          var pieceX = _app.__model.pieceX + ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key)
+            , pieceY = _app.__model.pieceY
+            , textX  = pieceX + CONFIG.PIECE.TEXT.OFFSET.X
+            , textY  = pieceY + CONFIG.PIECE.TEXT.OFFSET.Y
 
           // piece style
           _app.context.fillStyle = CONFIG.PIECE.COLOR[val]

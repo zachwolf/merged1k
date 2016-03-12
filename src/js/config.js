@@ -26,13 +26,13 @@ var CONFIG = {
 		},
 		Y: _pieceY,
 		TEXT: {
-			X: {
-				1: _pieceX1 + _pieceSize / 2,
-				2: _pieceX2 + _pieceSize / 2
+			OFFSET: {
+				X: _pieceSize / 2,
+				Y: _pieceSize / 2 + 8
 			},
-			Y: _pieceY + (_pieceSize / 2) + 8,
 			FONT: "bold 24px sans-serif",
 			COLOR: "rgba(255, 255, 255, .8)",
+			// COLOR: "red",
 			ALIGN: "center"
 		}
 	},
@@ -41,11 +41,8 @@ var CONFIG = {
 		Y: 100
 	},
 	STAGE: {
+		BACKGROUND: '#FFF',
 		WIDTH: _stageWidth,
-		HEIGHT: _stageHeight/*,
-		CENTER: {
-			X: _stageWidth / 2,
-			Y: _stageHeight / 2
-		}*/
+		HEIGHT: _stageHeight
 	}
 }
