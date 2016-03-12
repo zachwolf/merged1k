@@ -31,7 +31,8 @@ var AppView = function (options) {
 
   // game model
   this.__model = {
-    currentPiece: null
+    currentPiece: null,
+    isDragging: false
     // ...
   }
 
@@ -55,7 +56,9 @@ AppView.prototype.bindEvents = function () {
 AppView.prototype.handleDragEvent = function (e) {
   e.preventDefault()
 
-  console.log('handle drag', this);
+  this.__model.isDragging = true
+
+  this.draw()
 }
 
 /**
@@ -63,21 +66,58 @@ AppView.prototype.handleDragEvent = function (e) {
  */
 AppView.prototype.handleReleaseEvent = function (e) {
   e.preventDefault()
-  console.log('handle drag', this);
+  
+  this.__model.isDragging = false
 }
 
 /**
  * Deletes last game, if it exists, gets first piece in new game
  * 
- * @return {AppView} - self reference
+ * @return {AppView}
  */
 AppView.prototype.startGame = function() {
-  /*
-  clear game model
-  set a new piece
-   */
 
   this.__model.currentPiece = new PieceView(getPieceFilter(this))
 
+  this.draw()
+
   return this
 }
+
+
+/**
+ * Draws the AppView to the canvas
+ * 
+ * @return {AppView}
+ */
+AppView.prototype.draw = (function () {
+
+  /**
+   * [_draw description]
+   * @return {[type]} [description]
+   */
+  var _draw = function () {
+        _app.__model.currentPiece.__model.value.forEach(function (val, key) {
+          
+        })
+
+        if (_app.__model.isDragging) {
+          requestAnimationFrame(_draw)
+        }
+      }
+    , _app
+
+  return function () {
+    _app = this
+    _draw()
+
+    return this
+  }
+}())
+
+// function () {
+
+//   _draw(this)
+
+//   return this
+// }
