@@ -1,3 +1,34 @@
+function validateDrop (m, piece){
+	// if first block is on an occupied piece
+	if (m.xy0 !== 0) {
+		return false
+	}
+
+	if (piece.length === 2) {
+		m.x1 = m.x0 + (!!~[0,180].indexOf(piece.__model.rotation) ? 1 : 0)
+		m.y1 = m.y0 + (!!~[0,180].indexOf(piece.__model.rotation) ? 0 : 1)
+
+		// two piece is off board to bottom
+		if (m.y1 >= this.__model.state.length) {
+			return false
+		}
+
+		// two piece is off board to right
+		if (m.x1 >= this.__model.state[0].length) {
+			return false
+		}
+
+		m.xy1 = this.__model.state[m.y1][m.x1]
+
+		// if second block is on an occupied piece
+		if (m.xy1 !== 0) {
+			return false
+		}
+	}
+
+	return true
+}
+
 /**
  * Displays game state
  * 
@@ -62,50 +93,23 @@ BoardView.prototype.getRowColumn = function(pos) {
  * 
  */
 BoardView.prototype.trySet = function (xy, piece) {
-	var x0  = xy[0]
-		, y0  = xy[1]
-		, xy0 = this.__model.state[y0][x0]
-		, x1 
-		, y1 
-		, xy1
+	var posMap = {
+				x0: xy[0],
+				y0: xy[1],
+				xy0: this.__model.state[xy[1]][xy[0]],
+				x1: NaN,
+				y1: NaN,
+				xy1: NaN
+			}
 		// can be set logic
-		, validDrop = (function(self){
-				// if first block is on an occupied piece
-				if (xy0 !== 0) {
-					return false
-				}
-
-				if (piece.length === 2) {
-					x1 = xy[0] + (!!~[0,180].indexOf(piece.__model.rotation) ? 1 : 0)
-					y1 = xy[1] + (!!~[0,180].indexOf(piece.__model.rotation) ? 0 : 1)
-
-					// two piece is off board to bottom
-					if (y1 >= self.__model.state.length) {
-						return false
-					}
-
-					// two piece is off board to right
-					if (x1 >= self.__model.state[0].length) {
-						return false
-					}
-
-					xy1 = self.__model.state[y1][x1]
-
-					// if second block is on an occupied piece
-					if (xy1 !== 0) {
-						return false
-					}
-				}
-
-				return true
-			}(this))
+		, validDrop = validateDrop.call(this, posMap, piece)
 
 	if (validDrop) {
 		// todo set correct positioning of complex pieces
-		this.__model.state[y0][x0] = piece.__model.value[0]
+		this.__model.state[posMap.y0][posMap.x0] = piece.__model.value[0]
 
 		if (piece.length === 2) {
-			this.__model.state[y1][x1] = piece.__model.value[1]
+			this.__model.state[posMap.y1][posMap.x1] = piece.__model.value[1]
 		}
 	}
 
