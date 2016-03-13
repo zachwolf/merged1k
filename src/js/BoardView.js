@@ -291,3 +291,32 @@ BoardView.prototype.getMerges = function (rowColOrigin) {
 
   return false
 }
+
+/**
+ * Checks if the board has any two connected openings
+ * 
+ * @return {Boolean}
+ */
+BoardView.prototype.canHavePairs = function () {
+
+  for (var rowkey = 0; rowkey < this.__model.rowLimit; rowkey++) {
+    var row = this.__model.state[rowkey]
+    for (var colkey = 0; colkey < this.__model.colLimit; colkey++) {
+      var sqr = row[colkey]
+
+      if (sqr === 0) {
+
+        if (colkey + 1 < this.__model.colLimit && row[colkey + 1] === 0) {
+          return true
+        }
+
+        if (rowkey + 1 < this.__model.rowLimit && this.__model.state[rowkey + 1][colkey] === 0) {
+          return true
+        }
+      }
+    }
+  }
+
+
+  return false
+}

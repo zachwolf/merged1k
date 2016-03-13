@@ -5,12 +5,14 @@
  */
 function getPieceFilter (_app) {
   var highest     = _app.board.getHighestValue()
+    , allowPairs  = _app.board.canHavePairs()
     , numberLimit = !~~highest ? 2 : highest
 
   return function (possibleList) {
     return possibleList.filter(function (possible) {
       return possible.length === 1 ?
                possible[0] <= numberLimit :
+               allowPairs &&
                possible[0] <= numberLimit &&
                possible[1] <= numberLimit
     })
