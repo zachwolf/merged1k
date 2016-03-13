@@ -1,3 +1,11 @@
+/**
+ * checks that a given piece is allowed to be dropped
+ * at a given point
+ *
+ * @param  {Object} m - hash of passed parameters
+ * @param  {PieceView} piece - instance of pieceView to check
+ * @return {Boolean} - drop was valid
+ */
 function validateDrop (m, piece){
   // if first block is on an occupied piece
   if (m.rowCol0 !== 0) {
@@ -46,8 +54,9 @@ var BoardView = function () {
 }
 
 /**
- * [getHighestValue description]
- * @return {[type]} [description]
+ * Loops through the board to find the high current value
+ *
+ * @return {Number} - highest piece on board
  */
 BoardView.prototype.getHighestValue = function () {
   return this.__model.state.map(function (row) {
@@ -60,8 +69,9 @@ BoardView.prototype.getHighestValue = function () {
 }
 
 /**
- * [reset description]
- * @return {[type]} [description]
+ * Erases the board state
+ * 
+ * @return {BoardView}
  */
 BoardView.prototype.reset = function () {
   this.__model.state = CONFIG.BOARD.DEFAULT
@@ -70,9 +80,13 @@ BoardView.prototype.reset = function () {
 }
 
 /**
- * [getRowColumn description]
- * @param  {[type]} pos [description]
- * @return {[type]}     [description]
+ * Calculates a row and col on board based on x, y event coordinates
+ * 
+ * @param  {Object} pos
+ * @param  {Number} pos.x - event x
+ * @param  {Number} pos.y - event y
+ * @return {Boolean|Array} - if the event is off the board, return false
+ *                           otherwise, return row, col Array
  */
 BoardView.prototype.getRowColumn = function(pos) {
   var x  = pos.x || NaN
@@ -93,9 +107,12 @@ BoardView.prototype.getRowColumn = function(pos) {
 }
 
 /**
- * 
+ * Attempts to updated the board state with a given value
+ *
+ * @param {Array} rowCol - position to set
+ * @param {PieceView} piece - value(s) to be set
+ * @param {Boolean} - whether or not the drop was successful
  */
-// BoardView.prototype.trySet = function (xy, piece) {
 BoardView.prototype.trySet = function (rowCol, piece) {
   var posMap = {
         row0: rowCol[0],
@@ -120,20 +137,34 @@ BoardView.prototype.trySet = function (rowCol, piece) {
 }
 
 /**
+ * Given a list of row, col pairs with equal values,
+ * see if list items are touching in order to form mergeable blocks
+ * - [1] if there are less than three sqrs, there is no possible grouping
+ * - [2] find all cover rol, col arrays to strings in order to
+ *       be able to check for equality of positions
+ * - [3] for each sqr, check if it has neighboring sqrs that are in the
+ *       passed group. 
+ * - [4] convert the grouped pairs to strings to be compared with other strings
+ * - [5] search groups for mergeable items
+ * - [6] if the first group returned is smaller than needed for a merge, return false
+ * - [7] if a full, mergeable group has been found, convert the string
+ *       list of positions, back into valid numbers
  * 
+ * @param {Array} sqrs - list of positions
+ * @param {Array|Boolean}
  */
 function crawlPositions (sqrs) {
-  if (sqrs.length < 3) {
+  if (sqrs.length < 3) { // [1]
     return false
   }
 
-  var sqrStr = sqrs.map(function (sqr) {
+  var sqrStr = sqrs.map(function (sqr) { // [2]
         return sqr.toString()
       })
     , pairs  = []
 
   // var above = not needed?
-  sqrs.forEach((function (sqr) {
+  sqrs.forEach((function (sqr) { // [3]
     var col   = sqr[0]
       , row   = sqr[1]
       , left  = row + 1
@@ -166,54 +197,32 @@ function crawlPositions (sqrs) {
     }
   }).bind(this))
 
-  var pairStr = pairs.map(function (pair) {
+  var pairStr = pairs.map(function (pair) { // [4]
     return pair.map(function (rowCol) {
       return rowCol.toString()
     })
   })
 
-  var group = filterGroups.call(this, pairs)
+  var group = filterGroups.call(this, pairs) // [5]
 
-  if (!group[0] || (group[0] && group[0].length < 3)) {
+  if (!group[0] || (group[0] && group[0].length < 3)) { // [6]
     return false
   }
 
-  // if (group && group.length && group[0].length >= 3) {
-  //   var remainingPairs = pairStr.filter(function (pair) {
-  //     for (var key = 0; key < pair.length; key++) {
-  //       if (!!~group[0].indexOf(pair[key])) {
-  //         return false
-  //       }
-  //     }
-  //     return true
-  //   })
-
-  //   if (remainingPairs.length) {
-
-  //     var group2 = filterGroups.call(this, remainingPairs)
-
-  //     if (group2 && group2.length && group2[0].length >= 3) {
-  //     }
-  //   }
-
-  //   return false
-  // }
-
-  return group[0].map(function (item) {
+  return group[0].map(function (item) { // [7]
     var split = item.split(',')
     return [parseInt(split[0]), parseInt(split[1])]
   })
 }
 
 /**
- * [function_name description]
- * @param  {[type]} argument [description]
- * @return {[type]}          [description]
+ * Recursively search for matchable pairs
+ * 
+ * @param  {Array} groups - an array of stringified col, row pairs
+ * @return {Array}
  */
-function filterGroups (groups, _res) {
-  var res = _res || []
-    , possibleRes = []
-    , pairStr = groups.map(function (group) {
+function filterGroups (groups) {
+  var pairStr = groups.map(function (group) {
         return group.filter(function(item, pos, self) {
           return self.indexOf(item) == pos
         }).sort().toString()
@@ -240,27 +249,26 @@ function filterGroups (groups, _res) {
 
       var singleGroup = filterGroups.call(this, newGroups)
 
-      // if (otherGroups.length) {};
       return singleGroup
     }
   } else {
     return pairStr
   }
 
-  // return res
   return newGroups
 }
 
 var limit = 10
 
 /**
- * 
+ * Find active piece on the board, check if they have ability to merge
+ *
+ * @param {Array} rowColOrigin - the position to merge to
  */
 BoardView.prototype.getMerges = function (rowColOrigin) {
   var state = this.__model.state
     , activeNumber = {}
     , res = {}
-    // , self = this
 
   state.forEach(function (row, rowkey) {
     row.forEach(function (sqr, colkey) {
@@ -274,26 +282,6 @@ BoardView.prototype.getMerges = function (rowColOrigin) {
     })
   })
 
-  // next steps:
-  // - figure out if it was a double piece being dropped
-  //   if it was, figure out which piece needs to be merged on
-  // 
-  // - recursive merging
-
-  // for (var valkey in activeNumber) {
-  //   var toBeMerged = crawlPositions.call(this, activeNumber[valkey])
-
-  //   if (toBeMerged) {
-  //     toBeMerged.forEach(function (sqr) {
-  //       if (sqr.toString() === rowColOrigin.toString()) {
-  //         state[rowColOrigin[0]][rowColOrigin[1]] = state[rowColOrigin[0]][rowColOrigin[1]] + 1
-  //       } else {
-  //         state[sqr[0]][sqr[1]] = 0
-  //       }
-  //     })
-  //   }
-  // }
-
   for (var valkey in activeNumber) {
     var groups = crawlPositions.call(this, activeNumber[valkey])
     if (groups) {
@@ -303,20 +291,3 @@ BoardView.prototype.getMerges = function (rowColOrigin) {
 
   return false
 }
-
-
-
-/*
-
-var otherGroups = groups.filter(function (pos) {
-        for (var singleGroupKey = 0; singleGroupKey < singleGroup.length; singleGroupKey++) {
-          if (!!~pos.indexOf(singleGroup[0][singleGroupKey])) {
-            return false
-          }
-        }
-
-        return true
-      })
-
-
- */

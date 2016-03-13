@@ -41,8 +41,9 @@ var AppView = function (options) {
 }
 
 /**
+ * Binds mouse interaction events
  * 
- * @return {[type]} [description]
+ * @return {AppView}
  */
 AppView.prototype.bindEvents = function () {
   this.canvas.addEventListener('mousedown', this.handleHoldEvent.bind(this))
@@ -52,10 +53,17 @@ AppView.prototype.bindEvents = function () {
   this.body.addEventListener('mousemove', this.handleMoveEvent.bind(this))
 
   this.canvas.addEventListener('click', this.handleClickEvent.bind(this))
+
+  return this
 }
 
 /**
- * 
+ * Event fired when mouse is pressed and held
+ * - [1] checks event occured over currentPiece
+ * - [2] updates currentPiece model
+ *
+ * @param {Object} e - mousedown event object
+ * @returns AppView
  */
 AppView.prototype.handleHoldEvent = function (e) {
   e.preventDefault()
@@ -70,10 +78,10 @@ AppView.prototype.handleHoldEvent = function (e) {
     , py1 = pieceModel.y + pieceModel.height
     , isOverPiece = px0 < ex && py0 < ey && ex < px1 && ey < py1
 
-  if (isOverPiece) {
+  if (isOverPiece) { // [1]
     this.__model.isDragging = true
 
-    this.__model.currentPiece.__model.x = e.offsetX
+    this.__model.currentPiece.__model.x = e.offsetX // [2]
     this.__model.currentPiece.__model.y = e.offsetY
     this.__model.currentPiece.__model.offset.x = ex - px0
     this.__model.currentPiece.__model.offset.y = ey - py0
@@ -85,26 +93,37 @@ AppView.prototype.handleHoldEvent = function (e) {
 }
 
 /**
- * 
+ * Event fired when mouse is released after dragging
+ * - [1] based on mouse x and y, find the correct col, row
+ * - [2] if the event was over the board, getRowColumn returns
+ *       an array. Based on that array, we can try and update
+ *       the board at that given postion with the currentPiece
+ * - [3] if the successfully updated, loop through the board's
+ *       state to search for matched groups. Continue until
+ *       no more matches were found
+ * - [4] update board state
+ * - [5] create a new currentPiece
+ * - [6] if the mouse was *not* over the board in [2],
+ *       move the piece back to it's origin
+ *
+ * @param {Object} e - event object
+ * @returns {AppView}
  */
 AppView.prototype.handleReleaseEvent = function (e) {
   e.preventDefault()
   
-  var rowCol = this.board.getRowColumn({
+  var rowCol = this.board.getRowColumn({ // [1]
         x: this.__model.currentPiece.get('x'),
         y: this.__model.currentPiece.get('y')
       })
     , self = this
 
-  if (rowCol && this.board.trySet(rowCol, this.__model.currentPiece)) {
-    for (var merges, mergeOrigin = rowCol; merges = this.board.getMerges(rowCol); ) {
+  if (rowCol && this.board.trySet(rowCol, this.__model.currentPiece)) { // [2]
+    for (var merges, mergeOrigin = rowCol; merges = this.board.getMerges(rowCol); ) { // [3]
       if (merges) {
         var val = self.board.__model.state[merges[0][0]][merges[0][1]]
 
         if (self.__model.currentPiece.length === 2) {
-          // get value of merges
-          // figure out which block tiggered that event
-
           if (!!~[0,180].indexOf(self.__model.currentPiece.get('rotation'))) {
             if (self.__model.currentPiece.get('value')[1] === val) {
               mergeOrigin = [mergeOrigin[0], mergeOrigin[1] + 1]
@@ -116,7 +135,7 @@ AppView.prototype.handleReleaseEvent = function (e) {
           }
         }
 
-        merges.forEach(function (sqr) {
+        merges.forEach(function (sqr) { // [4]
           if (sqr.toString() === mergeOrigin.toString()) {
             self.board.__model.state[mergeOrigin[0]][mergeOrigin[1]] = self.board.__model.state[mergeOrigin[0]][mergeOrigin[1]] + 1
           } else {
@@ -162,10 +181,10 @@ AppView.prototype.handleReleaseEvent = function (e) {
       }
     }
 
-    delete this.__model.currentPiece
+    delete this.__model.currentPiece // [5]
     this.__model.currentPiece = new PieceView(getPieceFilter(this))
 
-  } else {
+  } else { // [6]
     this.__model.currentPiece.resetPosition()
   }
 
@@ -177,32 +196,43 @@ AppView.prototype.handleReleaseEvent = function (e) {
 }
 
 /**
- * 
+ * Event fired when mouse is moved anywhere on the document
+ * - [1] only update the current piece model if a mousedown
+ *       occured over the piece
+ * - [2] set a flag to be used by click
+ *
+ * @param {Object} e - event object
+ * @returns {AppView}
  */
 AppView.prototype.handleMoveEvent = function (e) {
 
-  if (this.__model.isDragging) {
+  if (this.__model.isDragging) { // [1]
     this.__model.currentPiece.__model.x = e.offsetX
     this.__model.currentPiece.__model.y = e.offsetY
 
-    this.__model.hasMoved = true
+    this.__model.hasMoved = true // [2]
   }
-
 
   return this
 }
 
 /**
- * 
+ * Event fired by mouse click
+ * - [1] if the mouse has *not* moved, this click should rotate
+ *       the current piece
+ * - [2] reset listener for next handleMoveEvent event
+ *
+ * @param {Object} e - event object
+ * @returns {AppView}
  */
 AppView.prototype.handleClickEvent = function (e) {
   e.preventDefault()
 
-  if (!this.__model.hasMoved) {
+  if (!this.__model.hasMoved) { // [1]
     this.__model.currentPiece.rotate()
   }
 
-  this.__model.hasMoved = false
+  this.__model.hasMoved = false // [2]
   
   return this
 }
@@ -230,8 +260,8 @@ AppView.prototype.startGame = function() {
 AppView.prototype.draw = (function () {
 
   /**
-   * [_draw description]
-   * @return {[type]} [description]
+   * Loops through board, and currentPiece to reflect on screen
+   * what is in the models
    */
   var _draw = function () {
         // clear stage

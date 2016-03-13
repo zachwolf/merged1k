@@ -37,6 +37,8 @@ var PieceView = function (filter) {
 
 /**
  * Sets the board pieces value
+ * 
+ * @return {PieceView}
  */
 PieceView.prototype.setValue = function (__seed) {
   this.__model.value = __seed || (function(p){
@@ -47,8 +49,9 @@ PieceView.prototype.setValue = function (__seed) {
 }
 
 /**
- * [resetPosition description]
- * @return {[type]} [description]
+ * Moves the piece back it's origin
+ * 
+ * @return {PieceView}
  */
 PieceView.prototype.resetPosition = function () {
   this.__model.offset.x = 0
@@ -60,7 +63,10 @@ PieceView.prototype.resetPosition = function () {
 }
 
 /**
- * 
+ * Get a property from this model with optional logic
+ *
+ * @param {String} prop - property on this.__model
+ * @returns {*} - value of prop
  */
 PieceView.prototype.get = function (prop) {
   var model = this.__model
@@ -81,6 +87,8 @@ PieceView.prototype.get = function (prop) {
 
 /**
  * Rotate orientation 90 degrees
+ * 
+ * @return {PieceView}
  */
 PieceView.prototype.rotate = function () {
 
@@ -98,6 +106,8 @@ PieceView.prototype.rotate = function () {
 
 /**
  * calulate model values x, y, width, and height based on model.rotation value
+ * 
+ * @return {PieceView}
  */
 PieceView.prototype.setPositions = function () {
   var offset = this.__model.value.length === 1 ?
