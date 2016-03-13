@@ -43,13 +43,19 @@ BoardView.prototype.reset = function () {
 BoardView.prototype.getRowColumn = function(pos) {
 	var x  = pos.x || NaN
 		, y  = pos.y || NaN
-		, cx = x + CONFIG.PIECE.SIZE
-		, cy = y + CONFIG.PIECE.SIZE
+		, cx = x + CONFIG.PIECE.SIZE - CONFIG.BOARD.X
+		, cy = y + CONFIG.PIECE.SIZE - CONFIG.BOARD.Y
 		, isOverBoard = CONFIG.BOARD.X < cx && cx < CONFIG.BOARD.X + CONFIG.BOARD.WIDTH &&
 										CONFIG.BOARD.Y < cy && cy < CONFIG.BOARD.Y + CONFIG.BOARD.HEIGHT
 
 	if (isOverBoard) {
-		return [0, 0]
+		var dropX = Math.floor(((cx - CONFIG.BOARD.X) / CONFIG.BOARD.WIDTH) * 5)
+			, dropY = Math.floor(((cy - CONFIG.BOARD.Y) / CONFIG.BOARD.HEIGHT) * 5)
+
+		// debugger
+
+
+		return [dropX, dropY]
 	} else {
 		return null
 	}
@@ -65,7 +71,8 @@ BoardView.prototype.trySet = function (xy, piece) {
 		, validDrop = true
 
 	if (validDrop) {
-		this.__model.state[x][y] = piece.__model.value[0]
+		// todo set correct positioning of complex pieces
+		this.__model.state[y][x] = piece.__model.value[0]
 	}
 
 	return validDrop
