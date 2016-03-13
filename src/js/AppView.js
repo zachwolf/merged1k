@@ -121,9 +121,11 @@ AppView.prototype.handleReleaseEvent = function (e) {
     , self = this
 
   if (rowCol && this.board.trySet(rowCol, this.__model.currentPiece)) { // [2]
-    for (var merges, mergeOrigin = rowCol; merges = this.board.getMerges(rowCol); ) { // [3]
+    for (var merges, mergeOrigin; merges = this.board.getMerges(rowCol); ) { // [3]
       if (merges) {
         var val = self.board.__model.state[merges[0][0]][merges[0][1]]
+
+        mergeOrigin = rowCol
 
         if (self.__model.currentPiece.length === 2) {
           if (!!~[0,180].indexOf(self.__model.currentPiece.get('rotation'))) {
