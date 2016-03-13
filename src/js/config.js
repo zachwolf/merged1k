@@ -36,7 +36,14 @@ var CONFIG = {
 		X: _boardX,
 		Y: _boardX * 1.619,
 		WIDTH: _boardWidth,
-		HEIGHT: _boardWidth
+		HEIGHT: _boardWidth,
+		DEFAULT: [
+			[0, 0, 0, 0, 0],
+			[0, 0, 0, 0, 0],
+			[0, 0, 0, 0, 0],
+			[0, 0, 0, 0, 0],
+			[0, 0, 0, 0, 0]
+		]
 	},
 	STAGE: {
 		BACKGROUND: '#FFF',

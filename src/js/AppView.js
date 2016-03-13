@@ -99,6 +99,7 @@ AppView.prototype.handleReleaseEvent = function (e) {
     // XXX
     delete this.__model.currentPiece
     this.__model.currentPiece = new PieceView(getPieceFilter(this))
+    this.board.checkForMerges(rowCol)
   } else {
     this.__model.currentPiece.resetPosition()
   }

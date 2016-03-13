@@ -9,12 +9,12 @@ function validateDrop (m, piece){
 		m.y1 = m.y0 + (!!~[0,180].indexOf(piece.__model.rotation) ? 0 : 1)
 
 		// two piece is off board to bottom
-		if (m.y1 >= this.__model.state.length) {
+		if (m.y1 >= this.__model.rowLimit) {
 			return false
 		}
 
 		// two piece is off board to right
-		if (m.x1 >= this.__model.state[0].length) {
+		if (m.x1 >= this.__model.colLimit) {
 			return false
 		}
 
@@ -40,6 +40,9 @@ var BoardView = function () {
 	}
 
 	this.reset()
+
+	this.__model.rowLimit = this.__model.state.length
+	this.__model.colLimit = this.__model.state[0].length
 }
 
 /**
@@ -55,13 +58,7 @@ BoardView.prototype.getHighestValue = function () {
  * @return {[type]} [description]
  */
 BoardView.prototype.reset = function () {
-	this.__model.state = [
-		[0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0],
-		[0, 0, 0, 0, 0]
-	]
+	this.__model.state = CONFIG.BOARD.DEFAULT
 
 	return this
 }
@@ -114,4 +111,59 @@ BoardView.prototype.trySet = function (xy, piece) {
 	}
 
 	return validDrop
+}
+
+/**
+ * 
+ */
+function crawlFromPosition (val, origin) {
+	var row = origin[0]
+		, nextRow = row + 1
+		, col = origin[1]
+		, nextCol = col + 1
+		, prevCol = col - 1
+		, positions = [[row, col]]
+
+	if (nextCol < this.__model.colLimit) {
+		if (this.__model.state[row][nextCol] === val) {
+			positions = positions.concat(crawlFromPosition.call(this, val, [row, nextCol]))
+		}
+	}
+
+	if (nextRow < this.__model.rowLimit) {
+		if (this.__model.state[nextRow][col] === val) {
+			positions = positions.concat(crawlFromPosition.call(this, val, [nextRow, col]))
+		}
+	}
+
+	return positions
+}
+
+/**
+ * 
+ */
+BoardView.prototype.checkForMerges = function (xyOrigin) {
+	var state = this.__model.state
+
+  for (var rowkey = 0; rowkey < this.__model.rowLimit; rowkey++) {
+  	var row = state[rowkey]
+
+	  for (var colkey = 0; colkey < this.__model.colLimit; colkey++) {
+	  	var sqr = row[colkey]
+
+	  	if (sqr !== 0) {
+	  		var toBeMerged = crawlFromPosition.call(this, sqr, [rowkey, colkey]) // todo: is col, row correct or reversed?
+
+	  		if (toBeMerged.length >= 3) {
+	  			console.log('merge', toBeMerged);
+	  			// toBeMerged.forEach(function (argument) {
+	  			// 	// body...
+	  			// })
+	  			break
+	  		}
+	  	}
+	  }
+  }
+
+	return this
 }
