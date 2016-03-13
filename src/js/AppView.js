@@ -185,8 +185,16 @@ AppView.prototype.handleReleaseEvent = function (e) {
       }
     }
 
-    delete this.__model.currentPiece // [5]
-    this.__model.currentPiece = new PieceView(getPieceFilter(this))
+    if (!this.board.hasOpenSpaces()) {
+      setTimeout((function () {
+        alert('no moves left!')
+        this.startGame()
+      }).bind(this), 300)
+
+    } else {
+      delete this.__model.currentPiece // [5]
+      this.__model.currentPiece = new PieceView(getPieceFilter(this))
+    }
 
   } else { // [6]
     this.__model.currentPiece.resetPosition()
@@ -247,6 +255,8 @@ AppView.prototype.handleClickEvent = function (e) {
  * @return {AppView}
  */
 AppView.prototype.startGame = function() {
+
+  this.board.reset()
 
   this.__model.currentPiece = new PieceView(getPieceFilter(this))
 

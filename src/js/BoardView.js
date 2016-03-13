@@ -74,7 +74,13 @@ BoardView.prototype.getHighestValue = function () {
  * @return {BoardView}
  */
 BoardView.prototype.reset = function () {
-  this.__model.state = CONFIG.BOARD.DEFAULT
+  this.__model.state = [
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0]
+  ]
 
   return this
 }
@@ -317,6 +323,19 @@ BoardView.prototype.canHavePairs = function () {
     }
   }
 
+  return false
+}
 
+BoardView.prototype.hasOpenSpaces = function () {
+  for (var rowkey = 0; rowkey < this.__model.rowLimit; rowkey++) {
+    var row = this.__model.state[rowkey]
+    for (var colkey = 0; colkey < this.__model.colLimit; colkey++) {
+      var sqr = row[colkey]
+      if (sqr === 0) {
+        return true
+      }
+    }
+  }
+  
   return false
 }
