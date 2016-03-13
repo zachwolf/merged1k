@@ -90,7 +90,18 @@ AppView.prototype.handleHoldEvent = function (e) {
 AppView.prototype.handleReleaseEvent = function (e) {
   e.preventDefault()
   
-  this.__model.currentPiece.resetPosition()
+  var rowCol = this.board.getRowColumn({
+    x: this.__model.currentPiece.get('x'),
+    y: this.__model.currentPiece.get('y')
+  })
+
+  if (rowCol && this.board.trySet(rowCol, this.__model.currentPiece)) {
+    // XXX
+    delete this.__model.currentPiece
+    this.__model.currentPiece = new PieceView(getPieceFilter(this))
+  } else {
+    this.__model.currentPiece.resetPosition()
+  }
 
   this.__model.isDragging = false
 
@@ -157,15 +168,42 @@ AppView.prototype.draw = (function () {
    * @return {[type]} [description]
    */
   var _draw = function () {
-        var piece    = _app.__model.currentPiece
-          , rotation = piece.__model.rotation
-          , val      = piece.__model.value
-
-        // todo: rotation of piece
-
         // clear stage
         _app.context.fillStyle = CONFIG.STAGE.BACKGROUND
         _app.context.fillRect(0, 0, CONFIG.STAGE.WIDTH, CONFIG.STAGE.HEIGHT)
+
+        /*****************
+         *   BoardView   *
+         *****************/
+        var board = _app.board
+
+        board.__model.state.forEach(function (row, rowkey) {
+          row.forEach(function (sqr, colkey) {
+            var sqrX  = CONFIG.BOARD.X + (colkey * CONFIG.PIECE.SIZE) + (colkey * CONFIG.PIECE.MARGIN)
+              , sqrY  = CONFIG.BOARD.Y + (rowkey * CONFIG.PIECE.SIZE) + (rowkey * CONFIG.PIECE.MARGIN)
+              , textX = sqrX + CONFIG.PIECE.TEXT.OFFSET.X
+              , textY = sqrY + CONFIG.PIECE.TEXT.OFFSET.Y
+
+            _app.context.fillStyle = CONFIG.PIECE.COLOR[sqr]
+            _app.context.fillRect(sqrX, sqrY, CONFIG.PIECE.SIZE, CONFIG.PIECE.SIZE)
+
+            if (sqr !== 0) {
+              _app.context.font      = CONFIG.PIECE.TEXT.FONT
+              _app.context.fillStyle = CONFIG.PIECE.TEXT.COLOR
+              _app.context.textAlign = CONFIG.PIECE.TEXT.ALIGN
+
+              // add text
+              _app.context.fillText(sqr, textX, textY)
+            }
+          })
+        })
+
+        /*****************
+         *   PieceView   *
+         *****************/
+        var piece    = _app.__model.currentPiece
+          , rotation = piece.__model.rotation
+          , val      = piece.__model.value
 
         // debugging center of stage
         // _app.context.beginPath()
@@ -201,6 +239,7 @@ AppView.prototype.draw = (function () {
           _app.context.fillText(val, textX, textY)
         })
 
+        // loop when dragging
         if (_app.__model.isDragging) {
           requestAnimationFrame(_draw)
         }
