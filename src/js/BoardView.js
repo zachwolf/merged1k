@@ -50,7 +50,13 @@ var BoardView = function () {
  * @return {[type]} [description]
  */
 BoardView.prototype.getHighestValue = function () {
-  return 0
+  return this.__model.state.map(function (row) {
+    return row.reduce(function (prev, next) {
+      return Math.max(prev, next)
+    })
+  }).reduce(function (prev, next) {
+    return Math.max(prev, next)
+  })
 }
 
 /**
@@ -121,8 +127,7 @@ function crawlPositions (sqrs) {
     return false
   }
 
-  var res    = [sqrs[0]]
-    , sqrStr = sqrs.map(function (sqr) {
+  var sqrStr = sqrs.map(function (sqr) {
         return sqr.toString()
       })
     , pairs  = []
@@ -169,10 +174,30 @@ function crawlPositions (sqrs) {
 
   var group = filterGroups.call(this, pairs)
 
-  console.log('group', group);
-  if (group && group.length && group[0].length < 3) {
+  if (!group[0] || (group[0] && group[0].length < 3)) {
     return false
   }
+
+  // if (group && group.length && group[0].length >= 3) {
+  //   var remainingPairs = pairStr.filter(function (pair) {
+  //     for (var key = 0; key < pair.length; key++) {
+  //       if (!!~group[0].indexOf(pair[key])) {
+  //         return false
+  //       }
+  //     }
+  //     return true
+  //   })
+
+  //   if (remainingPairs.length) {
+
+  //     var group2 = filterGroups.call(this, remainingPairs)
+
+  //     if (group2 && group2.length && group2[0].length >= 3) {
+  //     }
+  //   }
+
+  //   return false
+  // }
 
   return group[0].map(function (item) {
     var split = item.split(',')
@@ -193,9 +218,6 @@ function filterGroups (groups, _res) {
           return self.indexOf(item) == pos
         }).sort().toString()
       }).filter(function(item, pos, self) {
-        // if (self.indexOf(item) == pos && item.match(/\d,\d/g).length >= 3) {
-        //   possibleRes.push(item.match(/\d,\d/g))
-        // }
         return self.indexOf(item) == pos
       }).map(function (item) {
         return item.match(/\d,\d/g)
@@ -218,16 +240,6 @@ function filterGroups (groups, _res) {
 
       var singleGroup = filterGroups.call(this, newGroups)
 
-      // var otherGroups = groups.filter(function (pos) {
-      //   for (var singleGroupKey = 0; singleGroupKey < singleGroup.length; singleGroupKey++) {
-      //     if (!!~pos.indexOf(singleGroup[0][singleGroupKey])) {
-      //       return false
-      //     }
-      //   }
-
-      //   return true
-      // })
-
       // if (otherGroups.length) {};
       return singleGroup
     }
@@ -244,10 +256,11 @@ var limit = 10
 /**
  * 
  */
-BoardView.prototype.checkForMerges = function (rowColOrigin) {
+BoardView.prototype.getMerges = function (rowColOrigin) {
   var state = this.__model.state
     , activeNumber = {}
-    , self = this
+    , res = {}
+    // , self = this
 
   state.forEach(function (row, rowkey) {
     row.forEach(function (sqr, colkey) {
@@ -261,126 +274,49 @@ BoardView.prototype.checkForMerges = function (rowColOrigin) {
     })
   })
 
-  for (var valkey in activeNumber) {
-    var toBeMerged = crawlPositions.call(this, activeNumber[valkey])
+  // next steps:
+  // - figure out if it was a double piece being dropped
+  //   if it was, figure out which piece needs to be merged on
+  // 
+  // - recursive merging
 
-    if (toBeMerged) {
-      toBeMerged.forEach(function (sqr) {
-        if (sqr.toString() === rowColOrigin.toString()) {
-          state[rowColOrigin[0]][rowColOrigin[1]] = state[rowColOrigin[0]][rowColOrigin[1]] + 1
-        } else {
-          state[sqr[0]][sqr[1]] = 0
-        }
-      })
+  // for (var valkey in activeNumber) {
+  //   var toBeMerged = crawlPositions.call(this, activeNumber[valkey])
+
+  //   if (toBeMerged) {
+  //     toBeMerged.forEach(function (sqr) {
+  //       if (sqr.toString() === rowColOrigin.toString()) {
+  //         state[rowColOrigin[0]][rowColOrigin[1]] = state[rowColOrigin[0]][rowColOrigin[1]] + 1
+  //       } else {
+  //         state[sqr[0]][sqr[1]] = 0
+  //       }
+  //     })
+  //   }
+  // }
+
+  for (var valkey in activeNumber) {
+    var groups = crawlPositions.call(this, activeNumber[valkey])
+    if (groups) {
+      return groups
     }
   }
 
-  return this
+  return false
 }
 
 
 
 /*
 
-
-
-var row = origin[0]
-    , nextRow = row + 1
-    , col = origin[1]
-    , nextCol = col + 1
-    , prevCol = col - 1
-    , positions = [[row, col]]
-
-  if (nextCol < this.__model.colLimit) {
-    if (this.__model.state[row][nextCol] === val) {
-      positions = positions.concat(crawlFromPosition.call(this, val, [row, nextCol]))
-    }
-  }
-
-  if (nextRow < this.__model.rowLimit) {
-    if (this.__model.state[nextRow][col] === val) {
-      positions = positions.concat(crawlFromPosition.call(this, val, [nextRow, col]))
-    }
-  }
-
-  return positions
-
-
-
-
-for (var sqrkey = 0; sqrkey < sqrs.length; sqrkey++) {
-    var sqr = sqrs[sqrkey]
-      , row     = sqr[0]
-      , nextRow = row + 1
-      , col     = sqr[1]
-      , nextCol = col + 1
-
-    if (nextCol < this.__model.colLimit && !!~strs.indexOf([row, nextCol].toString())) {
-      res.push([row, nextCol])
-    }
-
-    if (nextRow < this.__model.rowLimit && !!~strs.indexOf([nextRow, col].toString())) {
-      res.push([nextRow, col])
-    }
-  }
-
-
-
-
-for (var rowkey = 0; rowkey < this.__model.rowLimit; rowkey++) {
-    var row = state[rowkey]
-
-    for (var colkey = 0; colkey < this.__model.colLimit; colkey++) {
-      var sqr = row[colkey]
-
-      if (sqr !== 0) {
-        var toBeMerged = crawlFromPosition.call(this, sqr, [rowkey, colkey]) // todo: is col, row correct or reversed?
-
-        if (toBeMerged.length >= 3) {
-          console.log('merge', toBeMerged);
-          // toBeMerged.forEach(function (argument) {
-          //  // body...
-          // })
-          break
-        }
-      }
-    }
-  }
-
-
-
-
-
-
-
-
-
-
-debugger
-
-      var nextPass = filterGroups.call(this, newGroups)
-
-      debugger
-
-      var allPairs = pairStr.reduce(function (curr, next) {
-        return curr.concat(next)
-      })
-
-
-
-
-
-      var x = possibleRes.filter(function (pos) {
-        for (var pairkey = 0; pairkey < allPairs.length; pairkey++) {
-          if (!!~pos.indexOf(allPairs[pairkey])) {
+var otherGroups = groups.filter(function (pos) {
+        for (var singleGroupKey = 0; singleGroupKey < singleGroup.length; singleGroupKey++) {
+          if (!!~pos.indexOf(singleGroup[0][singleGroupKey])) {
             return false
           }
         }
 
         return true
       })
-
-
 
 
  */

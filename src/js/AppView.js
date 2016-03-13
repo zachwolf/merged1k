@@ -91,15 +91,80 @@ AppView.prototype.handleReleaseEvent = function (e) {
   e.preventDefault()
   
   var rowCol = this.board.getRowColumn({
-    x: this.__model.currentPiece.get('x'),
-    y: this.__model.currentPiece.get('y')
-  })
+        x: this.__model.currentPiece.get('x'),
+        y: this.__model.currentPiece.get('y')
+      })
+    , self = this
 
   if (rowCol && this.board.trySet(rowCol, this.__model.currentPiece)) {
-    // XXX
+    for (var merges, mergeOrigin = rowCol; merges = this.board.getMerges(rowCol); ) {
+      if (merges) {
+        var val = self.board.__model.state[merges[0][0]][merges[0][1]]
+
+        if (self.__model.currentPiece.length === 2) {
+          // get value of merges
+          // figure out which block tiggered that event
+
+          if (!!~[0,180].indexOf(self.__model.currentPiece.get('rotation'))) {
+            if (self.__model.currentPiece.get('value')[1] === val) {
+              mergeOrigin = [mergeOrigin[0], mergeOrigin[1] + 1]
+            }
+          } else {
+            if (self.__model.currentPiece.get('value')[1] === val) {
+              mergeOrigin = [mergeOrigin[0] + 1, mergeOrigin[1]]
+            }
+          }
+        }
+
+        merges.forEach(function (sqr) {
+          if (sqr.toString() === mergeOrigin.toString()) {
+            self.board.__model.state[mergeOrigin[0]][mergeOrigin[1]] = self.board.__model.state[mergeOrigin[0]][mergeOrigin[1]] + 1
+          } else {
+            self.board.__model.state[sqr[0]][sqr[1]] = 0
+          }
+
+          if (self.board.__model.state[sqr[0]][sqr[1]] > 7) {
+            // above
+            if (mergeOrigin[0] - 1 > 0) {
+              if (mergeOrigin[1] - 1 > 0) {
+                self.board.__model.state[mergeOrigin[0] - 1][mergeOrigin[1] - 1] = 0
+              }
+              if (mergeOrigin[1] + 1 < self.board.__model.colLimit) {
+                self.board.__model.state[mergeOrigin[0] - 1][mergeOrigin[1] + 1] = 0
+              }
+              self.board.__model.state[mergeOrigin[0] - 1][mergeOrigin[1]] = 0
+            }
+            // below
+            if (mergeOrigin[0] + 1 < self.board.__model.rowLimit) {
+              if (mergeOrigin[1] - 1 > 0) {
+                self.board.__model.state[mergeOrigin[0] + 1][mergeOrigin[1] - 1] = 0
+              }
+              if (mergeOrigin[1] + 1 < self.board.__model.colLimit) {
+                self.board.__model.state[mergeOrigin[0] + 1][mergeOrigin[1] + 1] = 0
+              }
+              self.board.__model.state[mergeOrigin[0] + 1][mergeOrigin[1]] = 0
+            }
+            // left
+            if (mergeOrigin[1] - 1 > 0) {
+              self.board.__model.state[mergeOrigin[0]][mergeOrigin[1] - 1] = 0
+            }
+            // right
+            if (mergeOrigin[1] + 1 < self.board.__model.colLimit) {
+              self.board.__model.state[mergeOrigin[0]][mergeOrigin[1] + 1] = 0
+            }
+            // self
+            self.board.__model.state[mergeOrigin[0]][mergeOrigin[1]] = 0
+          }
+        })
+
+      } else {
+        break
+      }
+    }
+
     delete this.__model.currentPiece
     this.__model.currentPiece = new PieceView(getPieceFilter(this))
-    this.board.checkForMerges(rowCol)
+
   } else {
     this.__model.currentPiece.resetPosition()
   }

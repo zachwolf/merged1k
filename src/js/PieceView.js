@@ -71,12 +71,12 @@ PieceView.prototype.get = function (prop) {
         y: function () {
           return model.y - model.offset.y
         },
-        rotation: function () {
-          return model.rotation
+        default: function () {
+          return model[prop]
         }
       }
 
-  return getMap[prop] ? getMap[prop]() : null
+  return getMap[prop] ? getMap[prop]() : getMap.default()
 }
 
 /**
