@@ -5,41 +5,45 @@
  * @constructor
  */
 var PieceView = function (filter) {
-	this.__model = {
-		value: null,
-		possibilities: filter([
-			[1],    [2],    [3],    [4],    [5],    [6],   [7],
-			        [2, 1], [3, 1], [4, 1], [5, 1], [6, 1],
-			                [3, 2], [4, 2], [5, 2], [6, 2],
-			                        [4, 3], [5, 3], [6, 3],
-			                                [5, 4], [6, 4],
-			                                        [6, 5]
-		]),
+  this.__model = {
+    value: null,
+    possibilities: filter([
+      [1],    [2],    [3],    [4],    [5],    [6],   [7],
+              [2, 1], [3, 1], [4, 1], [5, 1], [6, 1],
+                      [3, 2], [4, 2], [5, 2], [6, 2],
+                              [4, 3], [5, 3], [6, 3],
+                                      [5, 4], [6, 4],
+                                              [6, 5]
+    ]),
 
-		x: NaN,
-		y: NaN,
-		offset: {
-			x: NaN,
-			y: NaN
-		}
-	}
+    x: NaN,
+    y: NaN,
+    offset: {
+      x: NaN,
+      y: NaN
+    },
+    width: NaN,
+    height: NaN,
 
-	this.setValue()
+    rotation: 0
+  }
 
-	this.resetPosition()
+  this.setValue()
 
-	this.length = this.__model.value.length
+  this.length = this.__model.value.length
+
+  this.resetPosition()
 }
 
 /**
  * Sets the board pieces value
  */
 PieceView.prototype.setValue = function (__seed) {
-	this.__model.value = __seed || (function(p){
-		return p[Math.floor(Math.random() * p.length)]
-	}(this.__model.possibilities))		
+  this.__model.value = __seed || (function(p){
+    return p[Math.floor(Math.random() * p.length)]
+  }(this.__model.possibilities))    
 
-	return this
+  return this
 }
 
 /**
@@ -47,17 +51,73 @@ PieceView.prototype.setValue = function (__seed) {
  * @return {[type]} [description]
  */
 PieceView.prototype.resetPosition = function () {
-	this.__model.x = CONFIG.PIECE.X[this.__model.value.length]
-  this.__model.y = CONFIG.PIECE.Y
   this.__model.offset.x = 0
   this.__model.offset.y = 0
-	
-	return this
+
+  this.setPositions()
+  
+  return this
 }
 
 /**
  * 
  */
 PieceView.prototype.get = function (prop) {
-	return this.__model[prop] - this.__model.offset[prop]
+  var model = this.__model
+    , getMap = {
+        x: function () {
+          return model.x - model.offset.x
+        },
+        y: function () {
+          return model.y - model.offset.y
+        },
+        rotation: function () {
+          return model.rotation
+        }
+      }
+
+  return getMap[prop] ? getMap[prop]() : null
+}
+
+/**
+ * Rotate orientation 90 degrees
+ */
+PieceView.prototype.rotate = function () {
+
+  this.__model.rotation = (this.__model.rotation + 90) % 360
+
+  if (!!~[0, 180].indexOf(this.__model.rotation)) {
+    this.__model.value.reverse()
+  }
+
+  this.setPositions()
+
+  return this
+}
+
+
+/**
+ * calulate model values x, y, width, and height based on model.rotation value
+ */
+PieceView.prototype.setPositions = function () {
+  var offset = this.__model.value.length === 1 ?
+                 CONFIG.PIECE.SIZE / 2 :
+                 CONFIG.PIECE.SIZE + (CONFIG.PIECE.MARGIN / 2)
+      dSize  = this.__model.value.length === 1 ?
+                 CONFIG.PIECE.SIZE :
+                 CONFIG.PIECE.SIZE * 2 + CONFIG.PIECE.MARGIN
+
+  if (!!~[90, 270].indexOf(this.__model.rotation)) {
+    this.__model.x      = CONFIG.PIECE.X - CONFIG.PIECE.SIZE / 2
+    this.__model.y      = CONFIG.PIECE.Y - offset
+    this.__model.width  = CONFIG.PIECE.SIZE
+    this.__model.height = dSize
+  } else {
+    this.__model.x      = CONFIG.PIECE.X - offset
+    this.__model.y      = CONFIG.PIECE.Y - CONFIG.PIECE.SIZE / 2
+    this.__model.width  = dSize
+    this.__model.height = CONFIG.PIECE.SIZE
+  }
+
+  return this
 }

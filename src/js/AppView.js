@@ -32,7 +32,8 @@ var AppView = function (options) {
   // game model
   this.__model = {
     currentPiece: null,
-    isDragging: false
+    isDragging: false,
+    hasMoved: false
   }
 
   // binding events
@@ -44,26 +45,29 @@ var AppView = function (options) {
  * @return {[type]} [description]
  */
 AppView.prototype.bindEvents = function () {
-  this.canvas.addEventListener('mousedown', this.handleClickEvent.bind(this))
+  this.canvas.addEventListener('mousedown', this.handleHoldEvent.bind(this))
 
   this.body.addEventListener('mouseup', this.handleReleaseEvent.bind(this))
 
   this.body.addEventListener('mousemove', this.handleMoveEvent.bind(this))
+
+  this.canvas.addEventListener('click', this.handleClickEvent.bind(this))
 }
 
 /**
  * 
  */
-AppView.prototype.handleClickEvent = function (e) {
+AppView.prototype.handleHoldEvent = function (e) {
   e.preventDefault()
 
-  var pieceCount = this.__model.currentPiece.__model.value.length
+  var pieceModel = this.__model.currentPiece.__model
+    , pieceCount = pieceModel.value.length
     , ex  = e.offsetX
     , ey  = e.offsetY
-    , px0 = CONFIG.PIECE.X[pieceCount]
-    , py0 = CONFIG.PIECE.Y
-    , px1 = px0 + (pieceCount === 1 ? CONFIG.PIECE.SIZE : CONFIG.PIECE.SIZE * 2 + CONFIG.PIECE.MARGIN)
-    , py1 = py0 + CONFIG.PIECE.SIZE
+    , px0 = pieceModel.x
+    , py0 = pieceModel.y
+    , px1 = pieceModel.x + pieceModel.width
+    , py1 = pieceModel.y + pieceModel.height
     , isOverPiece = px0 < ex && py0 < ey && ex < px1 && ey < py1
 
   if (isOverPiece) {
@@ -86,9 +90,9 @@ AppView.prototype.handleClickEvent = function (e) {
 AppView.prototype.handleReleaseEvent = function (e) {
   e.preventDefault()
   
-  this.__model.isDragging = false
-
   this.__model.currentPiece.resetPosition()
+
+  this.__model.isDragging = false
 
   this.draw()
 
@@ -103,8 +107,26 @@ AppView.prototype.handleMoveEvent = function (e) {
   if (this.__model.isDragging) {
     this.__model.currentPiece.__model.x = e.offsetX
     this.__model.currentPiece.__model.y = e.offsetY
+
+    this.__model.hasMoved = true
   }
 
+
+  return this
+}
+
+/**
+ * 
+ */
+AppView.prototype.handleClickEvent = function (e) {
+  e.preventDefault()
+
+  if (!this.__model.hasMoved) {
+    this.__model.currentPiece.rotate()
+  }
+
+  this.__model.hasMoved = false
+  
   return this
 }
 
@@ -135,18 +157,34 @@ AppView.prototype.draw = (function () {
    * @return {[type]} [description]
    */
   var _draw = function () {
-        var piece = _app.__model.currentPiece.__model.value
+        var piece    = _app.__model.currentPiece
+          , rotation = piece.__model.rotation
+          , val      = piece.__model.value
+
+        // todo: rotation of piece
 
         // clear stage
         _app.context.fillStyle = CONFIG.STAGE.BACKGROUND
         _app.context.fillRect(0, 0, CONFIG.STAGE.WIDTH, CONFIG.STAGE.HEIGHT)
 
+        // debugging center of stage
+        // _app.context.beginPath()
+        // _app.context.moveTo(CONFIG.STAGE.WIDTH / 2, 0)
+        // _app.context.lineTo(CONFIG.STAGE.WIDTH / 2, CONFIG.STAGE.HEIGHT)
+        // _app.context.closePath()
+        // _app.context.stroke()
+
         // draw piece
-        piece.forEach(function (val, key) {
-          var pieceX = _app.__model.currentPiece.get('x') + ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key)
-            , pieceY = _app.__model.currentPiece.get('y')
-            , textX  = pieceX + CONFIG.PIECE.TEXT.OFFSET.X
-            , textY  = pieceY + CONFIG.PIECE.TEXT.OFFSET.Y
+        val.forEach(function (val, key) {
+          var offset  = ((CONFIG.PIECE.SIZE + CONFIG.PIECE.MARGIN) * key)
+
+            , offsetX = !!~[90, 270].indexOf(rotation) ? 0 : offset
+            , pieceX  = piece.get('x') + offsetX
+            , textX   = pieceX + CONFIG.PIECE.TEXT.OFFSET.X
+
+            , offsetY = !!~[0, 180].indexOf(rotation) ? 0 : offset
+            , pieceY  = piece.get('y') + offsetY
+            , textY   = pieceY + CONFIG.PIECE.TEXT.OFFSET.Y
 
           // piece style
           _app.context.fillStyle = CONFIG.PIECE.COLOR[val]
